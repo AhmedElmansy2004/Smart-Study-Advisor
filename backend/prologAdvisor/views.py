@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 from pyswip import Prolog
 import os
 import json
@@ -16,6 +18,7 @@ requests are expected to be on that format
     difficulty:             --> integer
 }
 '''
+@csrf_exempt
 def recommend(request):
     
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -32,15 +35,24 @@ def recommend(request):
     
     # insert student completed courses
     for course in completedCourses:
-        prolog.assertz(f"student_completed({studentName}, {course}).")
+        fact = f"student_completed({studentName}, {course})"
+        if not list(prolog.query(fact)):
+            prolog.assertz(fact)
      
     # insert student intersets
     for interest in interests:
-        prolog.assertz(f"student_interest({studentName}, {interest}).")  
+        fact = f"student_interest({studentName}, {interest})"
+        if not list(prolog.query(fact)):
+            prolog.assertz(fact)  
         
-    recommendations = list(prolog.query(f"recommend({studentName}, X, {difficulty})"))
+    recommendations = list(prolog.query(f"recommend_by_difficulty({studentName}, X, {difficulty})"))
     
     recommendationsList = [rec['X'] for rec in recommendations]
     
-    return render(request, 'prologAdvisor.html', {'recommendations': recommendationsList})
+    # return render(request, 'prologAdvisor.html', {'recommendations': recommendationsList})
+    # return recommendationsList
+    
+    return JsonResponse({
+        "recommendations": recommendationsList
+    })
     

@@ -216,6 +216,6 @@ recommend(Student, Course) :-
     \+ student_completed(Student, Course).
 
 recommend_by_difficulty(Student, Course, Difficulty):-
-    recommend(Studnt, Course),
+    recommend(Student, Course),
     difficulty(Course, Diff),
     Diff =< Difficulty.
