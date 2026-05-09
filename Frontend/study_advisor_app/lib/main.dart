@@ -79,26 +79,46 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
   // Mode selection
   String _selectedMode = 'inference'; // 'ai' or 'inference'
 
-  // Dropdown controllers removed - now using UniqueKey() for clean rebuilds
+  @override
+  void initState() {
+    super.initState();
+    _fetchAvailableCourses();
+    _fetchAvailableInterests();
+  }
+
+  // API configuration - CHANGE THIS for your setup
+  final String _apiBaseUrl = 'http://localhost:8000'; // Web
+  // final String _apiBaseUrl = 'http://10.0.2.2:8000'; // Android emulator
+  // final String _apiBaseUrl = 'http://192.168.1.5:8000'; // Physical device
+
+  // Dropdown controllers removed - now using UniqueKey() for clean rebuilds (this was a bug)
 
   // Available courses for prerequisites dropdown
-  final List<String> _availableCourses = [
-    'Mathematics I',
-    'Mathematics II',
-    'Physics I',
-    'Physics II',
-    'Introduction to Programming',
-    'Data Structures',
-    'Algorithms',
-    'Database Systems',
-    'Operating Systems',
-    'Computer Networks',
-    'Software Engineering',
-    'Artificial Intelligence',
-    'Machine Learning',
-    'Computer Graphics',
-    'Compiler Design',
-  ];
+  // TODO: get the available courses from the backend by the endpoint /prologAdvisor/getCourses/ and store it in _availableCourses
+  List<String> _availableCourses = [];
+
+  Future<void> _fetchAvailableCourses() async {
+    try {
+      final url = Uri.parse('$_apiBaseUrl/prologAdvisor/getCourses/');
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _availableCourses = List<String>.from(data['courses'] ?? []);
+        });
+      }
+    } catch (e) {
+      print('Error fetching courses: $e');
+    }
+  }
+
 
   // NEW: Separate list for Difficulty levels only
   final List<String> _availableDifficulties = [
@@ -108,18 +128,35 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
   ];
 
   // NEW: Separate list for Interests only (no difficulty mixed in)
-  final List<String> _availableInterests = [
-    'Theory-heavy',
-    'Project-based',
-    'Industry-relevant',
-    'Research-oriented',
-    'Mathematical',
-    'Programming-intensive',
-  ];
+  // TODO: get the available interests from the backend by the endpoint /prologAdvisor/getIntersets/ and store it in _availableInterests
+  List<String> _availableInterests = [];
+
+  Future<void> _fetchAvailableInterests() async {
+    try {
+      final url = Uri.parse('$_apiBaseUrl/prologAdvisor/getInterests/');
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _availableInterests = List<String>.from(data['interests'] ?? []);
+        });
+      }
+    } catch (e) {
+      print('Error fetching interests: $e');
+    }
+  }
+
 
   // User selections
   final List<String> _selectedPrerequisites = [];
-  final List<String> _selectedDifficulties = [];  // NEW
+  final List<String> _selectedDifficulties = [];
   final List<String> _selectedInterests = [];
 
   // Output
@@ -127,11 +164,6 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
   List<String> _inferenceRecommendations = [];
   bool _isLoading = false;
   String _errorMessage = '';
-
-  // API configuration - CHANGE THIS for your setup
-  final String _apiBaseUrl = 'http://localhost:8000'; // Web
-  // final String _apiBaseUrl = 'http://10.0.2.2:8000'; // Android emulator
-  // final String _apiBaseUrl = 'http://192.168.1.5:8000'; // Physical device
 
   // --- PREREQUISITE HELPERS ---
   void _addPrerequisite(String course) {
@@ -208,8 +240,8 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
 
     try {
       final endpoint = _selectedMode == 'ai'
-          ? '/advisor/ai-recommend/'
-          : '/advisor/inference-recommend/';
+          ? '/AI/chatbot_view/'
+          : '/prologAdvisor/recommend/';
       final url = Uri.parse('$_apiBaseUrl$endpoint');
 
       // NEW: Send difficulties and interests as separate JSON fields

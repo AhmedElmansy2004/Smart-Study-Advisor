@@ -19,5 +19,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('advisor/', include('advisor.urls')),
+    path('AI/', include('AI.urls')),
+    path('prologAdvisor/', include('prologAdvisor.urls')),
 ]
