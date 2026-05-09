@@ -1,7 +1,9 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 from django.http import JsonResponse
-from . import logic
+from . import Courses
+from . import Interests
+from . import Recommend
 
 # Create your views here.
 
@@ -9,7 +11,7 @@ from . import logic
 @require_GET
 def getAvailableCourses(request):
     
-    courseList = logic.PrologAdvisorLogic().getAvailableCourses()
+    courseList = Courses.Courses().getAvailableCourses()
     return JsonResponse({
         "courses": courseList
     })
@@ -18,7 +20,7 @@ def getAvailableCourses(request):
 @require_GET
 def getAvailableInterests(request):
     
-    interestsList = logic.PrologAdvisorLogic().getAvailableInterests()
+    interestsList = Interests.Interests().getAvailableInterests()
     print(interestsList)
     return JsonResponse({
         "interests": interestsList
@@ -28,7 +30,7 @@ def getAvailableInterests(request):
 @require_POST
 def recommend(request):
     
-    recommendationsList = logic.PrologAdvisorLogic().recommend(request)
+    recommendationsList = Recommend.Recommend().recommend(request)
     print(recommendationsList)
     return JsonResponse({
         "recommendations": recommendationsList
