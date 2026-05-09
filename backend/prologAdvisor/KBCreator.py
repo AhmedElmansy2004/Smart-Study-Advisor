@@ -53,10 +53,12 @@ class KBCreator:
                         outfile.write(f"course({var}).\n")
                         
                     elif(col == 'difficulty'):
-                        outfile.write(f"difficulty({courseName}, {var}).\n")
+                        diff = self.mapDifficulty(var)
+                        outfile.write(f"difficulty({courseName}, {diff}).\n")
                         
                     elif(col == 'prerequisite'):
-                        outfile.write(f"prerequisite({courseName}, {var}).\n")
+                        if var != "none":
+                            outfile.write(f"prerequisite({courseName}, {var}).\n")
                         
                     elif(col == 'preference'):
                         outfile.write(f"interest_match({var}, {courseName}).\n")

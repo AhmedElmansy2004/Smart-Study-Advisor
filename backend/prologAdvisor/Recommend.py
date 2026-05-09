@@ -2,7 +2,7 @@ from pyswip import Prolog
 import os
 import json
 
-class PrologAdvisorLogic:
+class Recommend:
     
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     PROLOG_FILE = os.path.join(BASE_DIR, 'prolog', 'knowledgeBase.pl')
@@ -17,6 +17,9 @@ class PrologAdvisorLogic:
         prolog = Prolog()
         prolog.consult(self.PROLOG_FILE)
         
+        print(interests)
+        print(completedCourses)
+        
         # insert student completed courses
         for course in completedCourses:
             fact = f"student_completed({course})"
@@ -30,18 +33,25 @@ class PrologAdvisorLogic:
                 prolog.assertz(fact)  
                 
                 
-        difficulties = map(self.mapDifficulty, difficulties)
+        difficulties = list(map(self.mapDifficulty, difficulties))
+        print(difficulties)
         
-        maxDifficulty = 1
+        # maxDifficulty = 1
+        maxDifficulty = max(difficulties) if difficulties else 1
                 
-        for difficulty in difficulties:
-            if(difficulty > maxDifficulty):
-                maxDifficulty = difficulty
+        # for difficulty in difficulties:
+        #     if(not (difficulty == None) and difficulty > maxDifficulty):
+        #         maxDifficulty = difficulty
+                
+        print(maxDifficulty)
             
         recommendations = list(prolog.query(f"recommend_by_difficulty(X, {maxDifficulty})"))
         
         # recommendationsList = [rec['X'] for rec in recommendations]
         recommendationsList = list(map(lambda rec: rec['X'], recommendations))
+        
+        print(recommendationsList)
+        
         
         prolog.retractall("student_completed(_)")
         prolog.retractall("student_interest(_)")
@@ -55,3 +65,5 @@ class PrologAdvisorLogic:
             return 2
         elif difficulty == 'hard':
             return 3
+        else:
+            return 1

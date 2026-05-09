@@ -3,5 +3,5 @@ from . import views
 
 # URLConfig
 urlpatterns = [
-    path('chatbot/', views.Chatbot_view , name = 'chatbot')
+    path('chatbot/', views.Chatbot_view)
 ]

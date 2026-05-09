@@ -10,6 +10,7 @@ from . import Recommend
 @csrf_exempt
 @require_GET
 def getAvailableCourses(request):
+    print("getAvailableCourses called")
     
     courseList = Courses.Courses().getAvailableCourses()
     return JsonResponse({
@@ -19,6 +20,7 @@ def getAvailableCourses(request):
 @csrf_exempt
 @require_GET
 def getAvailableInterests(request):
+    print("getAvailableInterests called")
     
     interestsList = Interests.Interests().getAvailableInterests()
     print(interestsList)
@@ -29,9 +31,10 @@ def getAvailableInterests(request):
 @csrf_exempt
 @require_POST
 def recommend(request):
+    print("recommend called")
     
     recommendationsList = Recommend.Recommend().recommend(request)
-    print(recommendationsList)
+    
     return JsonResponse({
         "recommendations": recommendationsList
     })

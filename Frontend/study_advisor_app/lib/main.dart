@@ -94,7 +94,7 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
   // Dropdown controllers removed - now using UniqueKey() for clean rebuilds (this was a bug)
 
   // Available courses for prerequisites dropdown
-  // TODO: get the available courses from the backend by the endpoint /prologAdvisor/getCourses/ and store it in _availableCourses
+  // DONE: get the available courses from the backend by the endpoint /prologAdvisor/getCourses/ and store it in _availableCourses
   List<String> _availableCourses = [];
 
   Future<void> _fetchAvailableCourses() async {
@@ -122,13 +122,13 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
 
   // NEW: Separate list for Difficulty levels only
   final List<String> _availableDifficulties = [
-    'Easy',
-    'Medium',
-    'Hard',
+    'easy',
+    'medium',
+    'hard',
   ];
 
   // NEW: Separate list for Interests only (no difficulty mixed in)
-  // TODO: get the available interests from the backend by the endpoint /prologAdvisor/getIntersets/ and store it in _availableInterests
+  // DONE: get the available interests from the backend by the endpoint /prologAdvisor/getInterests/ and store it in _availableInterests
   List<String> _availableInterests = [];
 
   Future<void> _fetchAvailableInterests() async {
@@ -164,6 +164,7 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
   List<String> _inferenceRecommendations = [];
   bool _isLoading = false;
   String _errorMessage = '';
+  bool _hasResponse = false;
 
   // --- PREREQUISITE HELPERS ---
   void _addPrerequisite(String course) {
@@ -236,11 +237,12 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
       _errorMessage = '';
       _aiResponse = '';
       _inferenceRecommendations = [];
+      _hasResponse = false;
     });
 
     try {
       final endpoint = _selectedMode == 'ai'
-          ? '/AI/chatbot_view/'
+          ? '/AI/chatbot/'
           : '/prologAdvisor/recommend/';
       final url = Uri.parse('$_apiBaseUrl$endpoint');
 
@@ -265,6 +267,7 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
         final data = jsonDecode(response.body);
 
         setState(() {
+          _hasResponse = true;
           if (_selectedMode == 'ai') {
             _aiResponse = data['recommendation'] ??
                 data['response'] ??
@@ -293,7 +296,7 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
   }
 
   Widget _buildResultsCard() {
-    if (_aiResponse.isEmpty && _inferenceRecommendations.isEmpty) {
+    if (!_hasResponse) {
       return const SizedBox.shrink(key: ValueKey('empty'));
     }
 
@@ -322,7 +325,7 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
       );
     } else if (_inferenceRecommendations.isEmpty) {
       content = const Text(
-        'No recommendations found based on your criteria.',
+        'No courses satisfy the queries.',
         style: TextStyle(
           fontStyle: FontStyle.italic,
           color: Colors.white70,

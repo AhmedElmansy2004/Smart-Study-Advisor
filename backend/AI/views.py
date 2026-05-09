@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
@@ -8,6 +7,7 @@ from .service import ask_gemini
 @csrf_exempt
 @require_POST
 def Chatbot_view(request):
+    print("chat bot_view called")
     try:
         data = json.loads(request.body or b'{}')
     except json.JSONDecodeError:
