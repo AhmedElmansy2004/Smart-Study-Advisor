@@ -1,5 +1,5 @@
-:- dynamic student_completed/2.
-:- dynamic student_interest/2.
+:- dynamic student_completed/1.
+:- dynamic student_interest/1.
 
 % ===== COURSES =====
 course(mth111).
@@ -32,34 +32,34 @@ course(cse461).
 course(cse442).
 
 % ===== DIFFICULTY =====
-difficulty(mth111, 8).
-difficulty(phy111, 7).
-difficulty(cse121, 5).
-difficulty(cse122, 6).
-difficulty(cse131, 6).
-difficulty(mth211, 7).
-difficulty(cse221, 8).
-difficulty(cse222, 9).
-difficulty(cse225, 7).
-difficulty(cse231, 8).
-difficulty(cse241, 6).
-difficulty(cse261, 8).
-difficulty(cse321, 8).
-difficulty(cse322, 6).
-difficulty(cse323, 7).
-difficulty(cse331, 9).
-difficulty(cse341, 7).
-difficulty(cse351, 8).
-difficulty(cse361_control, 9).
-difficulty(cse361_os2, 10).
-difficulty(cse421, 9).
-difficulty(cse441, 8).
-difficulty(cse451, 9).
-difficulty(cse452, 8).
-difficulty(cse453, 8).
-difficulty(cse431, 9).
-difficulty(cse461, 8).
-difficulty(cse442, 7).
+difficulty(mth111, 2).
+difficulty(phy111, 2).
+difficulty(cse121, 1).
+difficulty(cse122, 1).
+difficulty(cse131, 1).
+difficulty(mth211, 2).
+difficulty(cse221, 2).
+difficulty(cse222, 3).
+difficulty(cse225, 2).
+difficulty(cse231, 2).
+difficulty(cse241, 1).
+difficulty(cse261, 2).
+difficulty(cse321, 2).
+difficulty(cse322, 1).
+difficulty(cse323, 2).
+difficulty(cse331, 3).
+difficulty(cse341, 2).
+difficulty(cse351, 2).
+difficulty(cse361_control, 3).
+difficulty(cse361_os2, 3).
+difficulty(cse421, 3).
+difficulty(cse441, 2).
+difficulty(cse451, 3).
+difficulty(cse452, 2).
+difficulty(cse453, 2).
+difficulty(cse431, 3).
+difficulty(cse461, 2).
+difficulty(cse442, 2).
 
 % ===== PREREQUISITES =====
 prerequisite(cse122, cse121).
@@ -122,100 +122,23 @@ interest_match(control_systems, cse261).
 interest_match(control_systems, cse361_control).
 interest_match(control_systems, cse461).
 
-% ===== STUDENTS =====
-% ahmed - software focused, completed year 1 + some year 2
-student_completed(ahmed, mth111).
-student_completed(ahmed, phy111).
-student_completed(ahmed, cse121).
-student_completed(ahmed, cse122).
-student_completed(ahmed, cse131).
-
-
-% mansi - math focused, completed year 1
-student_completed(mansi, mth111).
-student_completed(mansi, phy111).
-student_completed(mansi, cse121).
-student_completed(mansi, cse122).
-student_completed(mansi, cse131).
-
-
-% mohamed - hardware focused, completed year 1 + year 2
-student_completed(mohamed, mth111).
-student_completed(mohamed, phy111).
-student_completed(mohamed, cse121).
-student_completed(mohamed, cse122).
-student_completed(mohamed, cse131).
-student_completed(mohamed, cse221).
-student_completed(mohamed, cse231).
-
-
-% sakr - networks focused, completed year 1 + year 2
-student_completed(sakr, mth111).
-student_completed(sakr, phy111).
-student_completed(sakr, cse121).
-student_completed(sakr, cse122).
-student_completed(sakr, cse131).
-student_completed(sakr, cse241).
-
-
-% radwan - ai focused, completed years 1+2
-student_completed(radwan, mth111).
-student_completed(radwan, phy111).
-student_completed(radwan, cse121).
-student_completed(radwan, cse122).
-student_completed(radwan, cse131).
-student_completed(radwan, cse221).
-student_completed(radwan, cse351).
-
-
-% abdelrahman - control focused, completed years 1+2
-student_completed(abdelrahman, mth111).
-student_completed(abdelrahman, phy111).
-student_completed(abdelrahman, cse121).
-student_completed(abdelrahman, cse122).
-student_completed(abdelrahman, cse131).
-student_completed(abdelrahman, cse261).
-
-
-% youssef - all rounder, completed year 1 only
-student_completed(youssef, mth111).
-student_completed(youssef, phy111).
-student_completed(youssef, cse121).
-student_completed(youssef, cse122).
-student_completed(youssef, cse131).
-
-% interests
-student_interest(ahmed, software_programming).
-student_interest(ahmed, ai_data_science).
-student_interest(mansi, math_science).
-student_interest(mansi, software_programming).
-student_interest(mohamed, hardware_architecture).
-student_interest(sakr, networks_security).
-student_interest(radwan, ai_data_science).
-student_interest(abdelrahman, control_systems).
-student_interest(youssef, software_programming).
-student_interest(youssef, networks_security).
-
 % ===== RULES =====
 
-% Available if prerequisite completed
-can_take(Student, Course) :-
+can_take(Course) :-
     prerequisite(Course, Pre),
-    student_completed(Student, Pre).
+    student_completed(Pre).
 
-% Available if no prerequisites
-can_take(Student, Course) :-
+can_take(Course) :-
     course(Course),
     \+ prerequisite(Course, _).
 
-% Recommend based on interest + availability + not completed
-recommend(Student, Course) :-
-    student_interest(Student, Interest),
+recommend(Course) :-
+    student_interest(Interest),
     interest_match(Interest, Course),
-    can_take(Student, Course),
-    \+ student_completed(Student, Course).
+    can_take(Course),
+    \+ student_completed(Course).
 
-recommend_by_difficulty(Student, Course, Difficulty):-
-    recommend(Student, Course),
+recommend_by_difficulty(Course, Difficulty):-
+    recommend(Course),
     difficulty(Course, Diff),
     Diff =< Difficulty.

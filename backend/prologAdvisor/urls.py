@@ -3,5 +3,6 @@ from . import views
 
 # URLConfig
 urlpatterns = [
+    path('getCourses/', views.getAvailableCourses),
     path('recommend/', views.recommend)
 ]
