@@ -8,6 +8,8 @@ from . import views
 
 app_name = 'advisor'
 ''' routes '''
+
 urlpatterns = [
-    path('hello-world', views.index, name='index'),
+    path('ai-recommend/', views.ai_recommend, name='ai_recommend'),
+    path('inference-recommend/', views.inference_recommend, name='inference_recommend'),
 ]
