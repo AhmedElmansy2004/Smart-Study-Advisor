@@ -12,12 +12,29 @@ import json
 requests are expected to be on that format
 
 {
-    student_name:           --> string
-    completed_courses: [],  --> list of strings
-    interests:               --> list of strings
-    difficulty:             --> integer
+    student_name:               --> string
+    completed_courses: [],      --> list of strings
+    interests:                  --> list of strings
+    difficulty:                 --> integer
 }
 '''
+@csrf_exempt
+def getAvailableCourses(request):
+    
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    PROLOG_FILE = os.path.join(BASE_DIR, 'prolog', 'knowledgeBase.pl')
+    
+    
+    prolog = Prolog()
+    prolog.consult(PROLOG_FILE)
+    
+    availableCourses = list(prolog.query(f"course(X)"))
+    courseList = [course['X'] for course in availableCourses]
+    
+    return JsonResponse({
+        "availableCourses": courseList
+    })
+
 @csrf_exempt
 def recommend(request):
     
