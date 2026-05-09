@@ -1,1 +1,35 @@
-backend/.env
+# Virtual environment
+venv/
+env/
+ENV/
+
+# Python cache
+_pycache_/
+*.py[cod]
+*$py.class
+*.so
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Media/uploads (if you add file uploads later)
+media/
+
+# Static files collected (if you use collectstatic)
+staticfiles/
+
+# Environment variables
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
