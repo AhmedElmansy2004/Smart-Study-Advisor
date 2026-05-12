@@ -55,10 +55,7 @@ class StudyAdvisorApp extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),
-            borderSide: const BorderSide(
-              color: Colors.cyanAccent,
-              width: 2,
-            ),
+            borderSide: const BorderSide(color: Colors.cyanAccent, width: 2),
           ),
           labelStyle: const TextStyle(color: Colors.white70),
         ),
@@ -86,10 +83,8 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
     _fetchAvailableInterests();
   }
 
-  // API configuration - CHANGE THIS for your setup
-  final String _apiBaseUrl = 'http://localhost:8000'; // Web
-  // final String _apiBaseUrl = 'http://10.0.2.2:8000'; // Android emulator
-  // final String _apiBaseUrl = 'http://192.168.1.5:8000'; // Physical device
+  // API configuration - Pointing to the Django backend
+  final String _apiBaseUrl = 'http://192.168.1.70:8000';
 
   // Dropdown controllers removed - now using UniqueKey() for clean rebuilds (this was a bug)
 
@@ -100,32 +95,38 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
   Future<void> _fetchAvailableCourses() async {
     try {
       final url = Uri.parse('$_apiBaseUrl/prologAdvisor/getCourses/');
-      final response = await http.get(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      );
+      final response = await http
+          .get(
+            url,
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+          )
+          .timeout(const Duration(seconds: 60));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
           _availableCourses = List<String>.from(data['courses'] ?? []);
+          _errorMessage = '';
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'Failed to load courses: ${response.statusCode}';
         });
       }
     } catch (e) {
+      setState(() {
+        _errorMessage =
+            'Network error fetching courses. Check if backend is running at $_apiBaseUrl';
+      });
       print('Error fetching courses: $e');
     }
   }
 
-
   // NEW: Separate list for Difficulty levels only
-  final List<String> _availableDifficulties = [
-    'easy',
-    'medium',
-    'hard',
-  ];
+  final List<String> _availableDifficulties = ['easy', 'medium', 'hard'];
 
   // NEW: Separate list for Interests only (no difficulty mixed in)
   // DONE: get the available interests from the backend by the endpoint /prologAdvisor/getInterests/ and store it in _availableInterests
@@ -134,25 +135,35 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
   Future<void> _fetchAvailableInterests() async {
     try {
       final url = Uri.parse('$_apiBaseUrl/prologAdvisor/getInterests/');
-      final response = await http.get(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      );
+      final response = await http
+          .get(
+            url,
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+          )
+          .timeout(const Duration(seconds: 60));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
           _availableInterests = List<String>.from(data['interests'] ?? []);
+          _errorMessage = '';
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'Failed to load interests: ${response.statusCode}';
         });
       }
     } catch (e) {
+      setState(() {
+        _errorMessage =
+            'Network error fetching interests. Check if backend is running at $_apiBaseUrl';
+      });
       print('Error fetching interests: $e');
     }
   }
-
 
   // User selections
   final List<String> _selectedPrerequisites = [];
@@ -249,19 +260,21 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
       // NEW: Send difficulties and interests as separate JSON fields
       final body = jsonEncode({
         'completed_courses': _selectedPrerequisites,
-        'difficulty': _selectedDifficulties,   // NEW
+        'difficulty': _selectedDifficulties, // NEW
         'interests': _selectedInterests,
         'mode': _selectedMode,
       });
 
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: body,
-      );
+      final response = await http
+          .post(
+            url,
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: body,
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -269,12 +282,14 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
         setState(() {
           _hasResponse = true;
           if (_selectedMode == 'ai') {
-            _aiResponse = data['recommendation'] ??
+            _aiResponse =
+                data['recommendation'] ??
                 data['response'] ??
                 'No response from AI.';
           } else {
-            _inferenceRecommendations =
-                List<String>.from(data['recommendations'] ?? []);
+            _inferenceRecommendations = List<String>.from(
+              data['recommendations'] ?? [],
+            );
           }
         });
       } else {
@@ -310,9 +325,7 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.12),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.12),
-          ),
+          border: Border.all(color: Colors.white.withOpacity(0.12)),
         ),
         child: Text(
           _aiResponse,
@@ -326,10 +339,7 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
     } else if (_inferenceRecommendations.isEmpty) {
       content = const Text(
         'No courses satisfy the queries.',
-        style: TextStyle(
-          fontStyle: FontStyle.italic,
-          color: Colors.white70,
-        ),
+        style: TextStyle(fontStyle: FontStyle.italic, color: Colors.white70),
       );
     } else {
       content = Column(
@@ -352,10 +362,7 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    Colors.green.shade400,
-                    Colors.teal.shade500,
-                  ],
+                  colors: [Colors.green.shade400, Colors.teal.shade500],
                 ),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
@@ -416,14 +423,8 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isAiMode
-              ? [
-                  Colors.indigo.shade700,
-                  Colors.cyan.shade600,
-                ]
-              : [
-                  Colors.green.shade400,
-                  Colors.teal.shade500,
-                ],
+              ? [Colors.indigo.shade700, Colors.cyan.shade600]
+              : [Colors.green.shade400, Colors.teal.shade500],
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
@@ -465,26 +466,41 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
   Widget build(BuildContext context) {
     final prerequisiteItems = _availableCourses
         .where((course) => !_selectedPrerequisites.contains(course))
-        .map((course) => DropdownMenuItem<String?>(
-              value: course,
-              child: Text(course),
-            ))
+        .map(
+          (course) => DropdownMenuItem<String?>(
+            value: course,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 250),
+              child: Text(course, overflow: TextOverflow.ellipsis),
+            ),
+          ),
+        )
         .toList();
 
     final difficultyItems = _availableDifficulties
         .where((difficulty) => !_selectedDifficulties.contains(difficulty))
-        .map((difficulty) => DropdownMenuItem<String?>(
-              value: difficulty,
-              child: Text(difficulty),
-            ))
+        .map(
+          (difficulty) => DropdownMenuItem<String?>(
+            value: difficulty,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 250),
+              child: Text(difficulty, overflow: TextOverflow.ellipsis),
+            ),
+          ),
+        )
         .toList();
 
     final interestItems = _availableInterests
         .where((interest) => !_selectedInterests.contains(interest))
-        .map((interest) => DropdownMenuItem<String?>(
-              value: interest,
-              child: Text(interest),
-            ))
+        .map(
+          (interest) => DropdownMenuItem<String?>(
+            value: interest,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 250),
+              child: Text(interest, overflow: TextOverflow.ellipsis),
+            ),
+          ),
+        )
         .toList();
 
     const sectionTitleStyle = TextStyle(
@@ -493,20 +509,30 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
       color: Colors.white,
     );
 
-    final subduedTextStyle = TextStyle(
-      color: Colors.white.withOpacity(0.7),
-    );
+    final subduedTextStyle = TextStyle(color: Colors.white.withOpacity(0.7));
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.auto_awesome, color: Colors.cyanAccent),
-            SizedBox(width: 10),
-            Text('Smart Study Advisor'),
-          ],
+        title: LayoutBuilder(
+          builder: (context, constraints) {
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.auto_awesome, color: Colors.cyanAccent),
+                const SizedBox(width: 10),
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: constraints.maxWidth - 50,
+                  ),
+                  child: const Text(
+                    'Smart Study Advisor',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
       body: Container(
@@ -514,11 +540,7 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0F172A),
-              Color(0xFF1E1B4B),
-              Color(0xFF312E81),
-            ],
+            colors: [Color(0xFF0F172A), Color(0xFF1E1B4B), Color(0xFF312E81)],
           ),
         ),
         child: SingleChildScrollView(
@@ -531,10 +553,7 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(28),
                   gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFF4F46E5),
-                      Color(0xFF06B6D4),
-                    ],
+                    colors: [Color(0xFF4F46E5), Color(0xFF06B6D4)],
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -546,11 +565,7 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
                 ),
                 child: const Column(
                   children: [
-                    Icon(
-                      Icons.school_rounded,
-                      size: 70,
-                      color: Colors.white,
-                    ),
+                    Icon(Icons.school_rounded, size: 70, color: Colors.white),
                     SizedBox(height: 16),
                     Text(
                       'Your Intelligent Study Companion',
@@ -591,74 +606,71 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
                           style: subduedTextStyle,
                         ),
                         const SizedBox(height: 16),
-                        Row(
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
                           children: [
-                            Expanded(
-                              child: ChoiceChip(
-                                selectedColor: Colors.indigoAccent,
-                                backgroundColor: const Color(0xFF334155),
-                                labelStyle: TextStyle(
-                                  color: _selectedMode == 'inference'
-                                      ? Colors.white
-                                      : Colors.white70,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                label: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.memory, size: 18),
-                                    SizedBox(width: 8),
-                                    Text('Inference Engine'),
-                                  ],
-                                ),
-                                selected: _selectedMode == 'inference',
-                                onSelected: (selected) {
-                                  if (selected) {
-                                    setState(() {
-                                      _selectedMode = 'inference';
-                                      _aiResponse = '';
-                                      _inferenceRecommendations = [];
-                                    });
-                                  }
-                                },
+                            ChoiceChip(
+                              selectedColor: Colors.indigoAccent,
+                              backgroundColor: const Color(0xFF334155),
+                              labelStyle: TextStyle(
+                                color: _selectedMode == 'inference'
+                                    ? Colors.white
+                                    : Colors.white70,
+                                fontWeight: FontWeight.w600,
                               ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              label: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.memory, size: 18),
+                                  SizedBox(width: 8),
+                                  Text('Inference Engine'),
+                                ],
+                              ),
+                              selected: _selectedMode == 'inference',
+                              onSelected: (selected) {
+                                if (selected) {
+                                  setState(() {
+                                    _selectedMode = 'inference';
+                                    _aiResponse = '';
+                                    _inferenceRecommendations = [];
+                                  });
+                                }
+                              },
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: ChoiceChip(
-                                selectedColor: Colors.indigoAccent,
-                                backgroundColor: const Color(0xFF334155),
-                                labelStyle: TextStyle(
-                                  color: _selectedMode == 'ai'
-                                      ? Colors.white
-                                      : Colors.white70,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                label: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.auto_awesome, size: 18),
-                                    SizedBox(width: 8),
-                                    Text('AI Engine'),
-                                  ],
-                                ),
-                                selected: _selectedMode == 'ai',
-                                onSelected: (selected) {
-                                  if (selected) {
-                                    setState(() {
-                                      _selectedMode = 'ai';
-                                      _aiResponse = '';
-                                      _inferenceRecommendations = [];
-                                    });
-                                  }
-                                },
+                            ChoiceChip(
+                              selectedColor: Colors.indigoAccent,
+                              backgroundColor: const Color(0xFF334155),
+                              labelStyle: TextStyle(
+                                color: _selectedMode == 'ai'
+                                    ? Colors.white
+                                    : Colors.white70,
+                                fontWeight: FontWeight.w600,
                               ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              label: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.auto_awesome, size: 18),
+                                  SizedBox(width: 8),
+                                  Text('AI Engine'),
+                                ],
+                              ),
+                              selected: _selectedMode == 'ai',
+                              onSelected: (selected) {
+                                if (selected) {
+                                  setState(() {
+                                    _selectedMode = 'ai';
+                                    _aiResponse = '';
+                                    _inferenceRecommendations = [];
+                                  });
+                                }
+                              },
                             ),
                           ],
                         ),
@@ -688,6 +700,7 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
                         const SizedBox(height: 16),
                         DropdownButtonFormField<String?>(
                           key: UniqueKey(),
+                          isExpanded: true,
                           value: null,
                           decoration: const InputDecoration(
                             labelText: 'Add a course',
@@ -695,10 +708,15 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
                           ),
                           items: prerequisiteItems.isEmpty
                               ? [
-                                  const DropdownMenuItem<String?>(
+                                  DropdownMenuItem<String?>(
                                     value: null,
                                     enabled: false,
-                                    child: Text('All courses selected'),
+                                    child: Text(
+                                      _errorMessage.contains('courses') ||
+                                              _errorMessage.contains('Network')
+                                          ? 'Error loading courses'
+                                          : 'All courses selected',
+                                    ),
                                   ),
                                 ]
                               : prerequisiteItems,
@@ -730,7 +748,15 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               ),
-                              label: Text(course),
+                              label: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 200,
+                                ),
+                                child: Text(
+                                  course,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
                               deleteIcon: const Icon(Icons.close, size: 18),
                               onDeleted: () => _removePrerequisite(course),
                             );
@@ -762,6 +788,7 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
                         const SizedBox(height: 16),
                         DropdownButtonFormField<String?>(
                           key: UniqueKey(),
+                          isExpanded: true,
                           value: null,
                           decoration: const InputDecoration(
                             labelText: 'Add difficulty',
@@ -804,7 +831,15 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               ),
-                              label: Text(difficulty),
+                              label: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 200,
+                                ),
+                                child: Text(
+                                  difficulty,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
                               deleteIcon: const Icon(Icons.close, size: 18),
                               onDeleted: () => _removeDifficulty(difficulty),
                             );
@@ -824,10 +859,7 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Interests',
-                          style: sectionTitleStyle,
-                        ),
+                        const Text('Interests', style: sectionTitleStyle),
                         const SizedBox(height: 8),
                         Text(
                           'Select topics or styles you are interested in.',
@@ -836,6 +868,7 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
                         const SizedBox(height: 16),
                         DropdownButtonFormField<String?>(
                           key: UniqueKey(),
+                          isExpanded: true,
                           value: null,
                           decoration: const InputDecoration(
                             labelText: 'Add interest',
@@ -843,10 +876,15 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
                           ),
                           items: interestItems.isEmpty
                               ? [
-                                  const DropdownMenuItem<String?>(
+                                  DropdownMenuItem<String?>(
                                     value: null,
                                     enabled: false,
-                                    child: Text('All interests selected'),
+                                    child: Text(
+                                      _errorMessage.contains('interests') ||
+                                              _errorMessage.contains('Network')
+                                          ? 'Error loading interests'
+                                          : 'All interests selected',
+                                    ),
                                   ),
                                 ]
                               : interestItems,
@@ -878,7 +916,15 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               ),
-                              label: Text(interest),
+                              label: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 200,
+                                ),
+                                child: Text(
+                                  interest,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
                               deleteIcon: const Icon(Icons.close, size: 18),
                               onDeleted: () => _removeInterest(interest),
                             );
@@ -894,10 +940,7 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
                 height: 60,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [
-                      Colors.indigoAccent,
-                      Colors.cyanAccent,
-                    ],
+                    colors: [Colors.indigoAccent, Colors.cyanAccent],
                   ),
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
@@ -952,9 +995,32 @@ class _AdvisorScreenState extends State<AdvisorScreen> {
                       Icon(Icons.error_outline, color: Colors.red.shade200),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Text(
-                          _errorMessage,
-                          style: const TextStyle(color: Colors.white),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _errorMessage,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            if (_errorMessage.contains(
+                              'Network error fetching',
+                            ))
+                              TextButton.icon(
+                                onPressed: () {
+                                  _fetchAvailableCourses();
+                                  _fetchAvailableInterests();
+                                },
+                                icon: const Icon(
+                                  Icons.refresh,
+                                  size: 16,
+                                  color: Colors.cyanAccent,
+                                ),
+                                label: const Text(
+                                  'Retry Loading Data',
+                                  style: TextStyle(color: Colors.cyanAccent),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ],
