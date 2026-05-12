@@ -169,8 +169,21 @@ After saving the CSV, re-run `KBCreator` (step 2 above) to regenerate the Prolog
 
 ---
 
+## Team
+
+| Role | Member | ID |
+|------|--------|----|
+| Logic Programmer (Prolog + KBCreator) | Youssef Atef Mohamed | 23010993 |
+| Backend Engineer (Django apps) | Mohamed ElSayed Radwan | 23010726 |
+| Functional / PySwip Integration | Ahmed Mohamed Ahmed ElSayed ElMansy | 23010228 |
+| Mobile + AI API (Flutter + Gemini) | AbdelRahman Mohamed Sakr | 23010545 |
+
+---
+
 ## Notes
 
 - No commits should be made after the submission deadline.
 - Each team member must be able to demonstrate the full system independently.
 - The Prolog knowledge base (`knowledgeBase.pl`) is auto-generated — edit the CSV, not the `.pl` file directly.
+- **GitHub:** https://github.com/AhmedElmansy2004/Smart-Study-Advisor
+- **Demo:** https://drive.google.com/file/d/1CPApLNZy7TLu-GPFZ4Whx7nmv4F0ejow/view?usp=drivesdk
