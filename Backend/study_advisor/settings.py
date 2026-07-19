@@ -122,5 +122,3 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
-
-CHATBOT_API_KEY='AIzaSyAv4Uf4cuvh0NyA8YnpDKqIvyz06FYv1VM' # let's get fucked
